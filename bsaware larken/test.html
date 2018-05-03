@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="EN-US">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        html, #viewDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body { 
+            background-image: url('Bike_background.png');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center; 
+            background-color: darkslategray; 
+            color: #ffffff;
+}
+        
+        
+        
+        /* Always set the map height explicitly to define the size of the div
+             * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+        /* Optional: Makes the sample page fill the window. */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            margin: 30px auto;
+            height: 60%;
+            width: 70%;
+        }
+        #LocationSearch {
+            clear: both;
+            margin: auto;
+            width: 50%;
+            border: 4px solid #f9c922;
+            padding: 10px;
+            align: center;
+        }
+        #continue-button {
+            position: absolute;
+            margin: 0 auto;
+            margin-top:10px;
+            margin-left: 570px;
+            width: 200px;
+        }
+        #map{
+            
+            padding: 10px;
+            box-shadow: 5px 15px 30px black;
+        }
+        #location-input{
+            width: 60%;
+            align-content: center;
+            color: black;
+        }
+        #add-location{
+            align: center;
+        }
+        #condition-input{
+            width: 100%;
+            height: 200px;
+            color: black;
+        }
+        #conditionOfBike{
+            color:black;
+        }
+    </style>
+</head>
+
+    <div id="loader-wrapper">
+        <div id="loader"></div>     
+        <div class="loader-section section-left"></div>
+        <div class="loader-section section-right"></div> 
+    </div>
+
+    <div id="content">
+            <center><h2>bsAware!</h2></center>
+            <center><p>A bike share compliance reporting app specificially designed for Charlotte, NC</p></center>
+    </div>
+
+    <div id="map"></div>
+    
+    <form id="LocationSearch">
+        <input type="text" id="location-input" placeholder="Intersection of Trade Street and Tryon Street">
+        <!-- Button triggers new input to be added -->
+        <input type="submit" id="add-location" class="btn btn-primary" value="Search for Location">
+    </form>
+
+    <button type="button" id="continue-button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+        Continue
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Which Company does this bike belong to?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-3 ml-auto"><button class="btn w3-yellow">Ofo</button></div>
+                                <div class="col-md-3 ml-auto"><button type="button" class="btn btn-success">LimeBike</button></div>
+                                <div class="col-md-3 ml-auto"><button type="button" class="btn btn-warning">Spin</button></div>
+                                <div class="col-md-3 ml-auto"><button class="btn btn-danger">Mobike</button></div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                    <div class="col-md-12 ml-auto" id="conditionOfBike">Would you like to add any addition information about the condition of this bike?</div>
+                                        <form id="bike-condition">
+                                            <input type="text" id="condition-input" placeholder="Please type condition of the bike here...">
+                                            <type="submit" value="Submit">
+                                        </form>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    <button type="button" input id="add-condition" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+
+<script>
+
+    $('body').toggleClass('loaded');
+    $("#continue-button").hide();
+
+    var map;
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 35.227311, lng: -80.843063 },
+            zoom: 8
+        });
+    }
+    $("#add-location").on("click", function (event) {
+
+        event.preventDefault();
+        var address = $("#location-input").val().trim();
+        // Here we construct our URL
+        var queryURL = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key=AIzaSyB8HwQtM9WLoXW7-UrQLJtVXE4fhAdjrjA";
+        
+        $.ajax({
+            url: queryURL,
+            method: "GET"
+        }).then(function (response) {
+            console.log(response)
+            $("#continue-button").show();
+            console.log($("#location-input").val().trim());
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: response.results[0].geometry.location,
+                zoom: 17
+            });
+            var marker = new google.maps.Marker({
+                position: response.results[0].geometry.location,
+                map: map,
+                title: 'Hello World!'
+            });
+            /*  var confirmbtn = $("<input>");
+              confirmbtn.addClass("btn")
+              confirmbtn.addClass("btn-primary")
+              confirmbtn.attr("id", "confirm-location");
+              confirmbtn.attr("type", "input");
+              confirmbtn.attr("value", "Confirm location and continue");
+              confirmbtn.attr("data-toggle", "modal")
+              confirmbtn.attr("data-target", "#exampleModalCenter")
+              $("#LocationSearch").append(confirmbtn);
+            */
+            $.ajax({
+                method: "GET",
+                url: "http://localhost:3000",
+                data: { 
+                    comments: "here's my comment",
+                    address: "123 fake st.",
+                }
+            })
+            .done ();
+            
+         
+        });
+    });
+        
+        $("body").on("click", "#continue-button", function (event) {
+            event.preventDefault();          
+            $(".modal").modal({
+            show: true,
+            closeOnEscape: true
+            });
+
+            
+        });
+
+        
+        //ADD ZOOM LIMITER LATER
+    
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCW3acitxf9tvobjzQP5apcmRTEKNcnLkU&callback=initMap" async
+    defer></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
